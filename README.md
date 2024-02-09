@@ -1,8 +1,8 @@
 # Computer vision heart rate monitoring
 
-Measuring heart rate based on face recording using discrete Fourier transform.
+Measuring heart rate based on face recording using discrete Fourier transform, with amplification of color changes.
 
-![](https://github.com/Robert-Porada/Computer-vision-heart-rate-monitoring/Example_gif.gif)
+![Example-gif](https://github.com/Robert-Porada/Computer-vision-heart-rate-monitoring/blob/main/Example_gif.gif)
 
 ## Usage
 Run the gui.py file
