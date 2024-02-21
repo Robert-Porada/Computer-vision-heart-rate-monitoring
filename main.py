@@ -5,7 +5,7 @@ import math
 
 import DFT
 import progress_bar
-import face_detection
+import face_detection_yolo
 
 
 VIDEO_PATH = 'Filmy_ruch/3/cold.mp4'
@@ -22,7 +22,7 @@ def main_func(VIDEO_PATH, wzmocnienie):
     amplifier = wzmocnienie
 
 
-    video_list, face_list, fps, frame_count = face_detection.read_and_detect_face(VIDEO_PATH)
+    video_list, face_list, fps, frame_count = face_detection_yolo.read_and_detect_face(VIDEO_PATH)
 
     video_duration = frame_count/fps
     number_of_sets = max((math.ceil((math.ceil(video_duration) - WINDOW_SIZE) / WINDOW_STRIDE) + 1), 1)
@@ -64,7 +64,7 @@ def main_func(VIDEO_PATH, wzmocnienie):
 
         # Liczenie średniej w wykrytym obszarze i podział na kanały
         for index, frane in enumerate(video_list):
-            x, y, w, h =  face_list[index][0]
+            x, y, w, h =  face_list[index]
 
             b, g, r = cv.split(frane)
             blue_channel.append(b)
@@ -112,18 +112,24 @@ def main_func(VIDEO_PATH, wzmocnienie):
 
         for i in range(len(blue_channel)):
 
-            blue_channel[i][y : y + h, x : x + w] = cv.scaleAdd(blue_channel[i][y : y + h, x : x + w], amplifier * idft_blue[i], blue_channel[i][y : y + h, x : x + w])
-            green_channel[i][y : y + h, x : x + w] = cv.scaleAdd(green_channel[i][y : y + h, x : x + w], amplifier* idft_green[i], green_channel[i][y : y + h, x : x + w])
-            red_channel[i][y : y + h, x : x + w] = cv.scaleAdd(red_channel[i][y : y + h, x : x + w], amplifier * idft_red[i], red_channel[i][y : y + h, x : x + w])
+            blue_channel[i][y : h, x : w] = cv.scaleAdd(blue_channel[i][y : h, x : w], amplifier * idft_blue[i], blue_channel[i][y : h, x : w])
+            green_channel[i][y : h, x : w] = cv.scaleAdd(green_channel[i][y : h, x : w], amplifier* idft_green[i], green_channel[i][y : h, x : w])
+            red_channel[i][y : h, x : w] = cv.scaleAdd(red_channel[i][y : h, x : w], amplifier * idft_red[i], red_channel[i][y : h, x : w])
 
 
             color_image = cv.merge([blue_channel[i], green_channel[i], red_channel[i]])
 
-            x, y, w, h =  face_list[i][0]
-            cv.rectangle(color_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv.rectangle(color_image, (x, y-20), (x + w, y), (0, 255, 0), -1)
+            x, y, w, h =  face_list[i]
+            cv.rectangle(color_image, (x, y), (w,h), (0, 255, 0), 2)
+            cv.rectangle(color_image, (x, y-20), (w, y), (0, 255, 0), -1)
 
-            cv.putText(color_image, tetno_wiadomosc, (x, y - 4), cv.FONT_HERSHEY_COMPLEX, 0.6, (0,0,0), 2)
+            cv.putText(img=color_image,
+                text=tetno_wiadomosc, 
+                org=(x, y - 4),
+                fontFace=cv.FONT_HERSHEY_TRIPLEX,
+                fontScale=0.6, 
+                color=(0,0,0), 
+                thickness=1)
 
             if i <= fps * WINDOW_STRIDE or k == number_of_sets - 1:
                 merged.append(color_image)
